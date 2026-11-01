@@ -253,31 +253,51 @@ function countNodes(node) {
  * backend's /api/trie/build endpoint returns.
  * @param {Object<string,string>} entriesDict
  */
-export function buildTrieResponse(entriesDict) {
+export function decodeHexValue(value) {
+    const hex = String(value).replace(/^0x/i, '');
+    if (hex === '') return [];
+    if (!/^(?:[0-9a-fA-F]{2})+$/.test(hex)) {
+        throw new Error('Hex Value must contain complete bytes (an even number of hexadecimal characters).');
+    }
+    const bytes = [];
+    for (let i = 0; i < hex.length; i += 2) {
+        bytes.push(parseInt(hex.slice(i, i + 2), 16));
+    }
+    return bytes;
+}
+
+/**
+ * Build a trie from { hexKey: value } entries.
+ * valueMode='utf8' preserves the original behavior; valueMode='hex' treats
+ * each value as raw bytes. Ethereum account-trie values should be RLP bytes
+ * supplied as hex, not UTF-8 text containing the characters "0x...".
+ */
+export function buildTrieResponse(entriesDict, valueMode = 'utf8') {
+    if (valueMode !== 'utf8' && valueMode !== 'hex') {
+        throw new Error(`Unsupported value mode: ${valueMode}`);
+    }
     const enc = new TextEncoder();
     const entries = [];
-    // Map raw value bytes -> original string for display.
     const valueLookup = new Map();
     for (const [k, v] of Object.entries(entriesDict)) {
         const keyBytes = decodeHexKey(k);
-        const valBytes = Array.from(enc.encode(v));
+        const valBytes = valueMode === 'hex'
+            ? decodeHexValue(v)
+            : Array.from(enc.encode(String(v)));
         entries.push([keyBytes, valBytes]);
-        valueLookup.set(valBytes.join(','), v);
+        valueLookup.set(valBytes.join(','), String(v));
     }
 
     const root = build(entries);
     const computedHex = '0x' + rootHashHex(root);
-
-    const dec = new TextDecoder('utf-8', { fatal: false });
     const valueRender = (bytes) => {
-        const hit = valueLookup.get(bytes.join(','));
-        if (hit !== undefined) return hit;
-        // Fallback: try UTF-8, else hex (mirrors the backend).
-        try {
-            return dec.decode(Uint8Array.from(bytes));
-        } catch {
+        if (valueMode === 'hex') {
             return '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
         }
+        const hit = valueLookup.get(bytes.join(','));
+        if (hit !== undefined) return hit;
+        const dec = new TextDecoder('utf-8', { fatal: false });
+        return dec.decode(Uint8Array.from(bytes));
     };
 
     return {
