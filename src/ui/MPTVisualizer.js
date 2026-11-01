@@ -19,6 +19,7 @@ export class MPTVisualizer {
         this.computedRoot = '';
         this.entries = {};           // hex_key -> value (custom mode only)
         this.valueMode = 'utf8';   // 'utf8' or 'hex' raw bytes
+        this.require32ByteKeys = false;
         this._rebuildPending = false;
         this._onChange = null;
         this.render();
@@ -33,19 +34,23 @@ export class MPTVisualizer {
     // --- Custom mode ---------------------------------------------------------
 
     async insert(key, value) {
-        if (!/^[0-9a-fA-F]+$/.test(key.replace(/^0x/, ''))) {
+        if (!/^[0-9a-fA-F]+$/.test(key.replace(/^0x/i, ''))) {
             throw new Error(`Invalid hex key: ${key}`);
         }
-        this.entries[key.replace(/^0x/, '').toLowerCase()] = value;
+        const normalizedKey = key.replace(/^0x/i, '').toLowerCase();
+        if (this.require32ByteKeys && normalizedKey.length !== 64) throw new Error('Ethereum account-trie keys must be exactly 32 bytes (64 hex characters).');
+        this.entries[normalizedKey] = value;
         await this._rebuild();
     }
 
     async insertBulk(dict) {
         for (const [k, v] of Object.entries(dict)) {
-            if (!/^[0-9a-fA-F]+$/.test(k.replace(/^0x/, ''))) {
+            if (!/^[0-9a-fA-F]+$/.test(k.replace(/^0x/i, ''))) {
                 throw new Error(`Invalid hex key: ${k}`);
             }
-            this.entries[k.replace(/^0x/, '').toLowerCase()] = v;
+            const normalizedKey = k.replace(/^0x/i, '').toLowerCase();
+            if (this.require32ByteKeys && normalizedKey.length !== 64) throw new Error(`Key ${k} is not exactly 32 bytes (64 hex characters).`);
+            this.entries[normalizedKey] = v;
         }
         await this._rebuild();
     }
@@ -56,6 +61,15 @@ export class MPTVisualizer {
         this.computedRoot = '';
         this.render();
         if (this._onChange) this._onChange();
+    }
+
+    setRequire32ByteKeys(enabled) {
+        this.require32ByteKeys = Boolean(enabled);
+        if (enabled) {
+            for (const key of Object.keys(this.entries)) {
+                if (key.length !== 64) throw new Error('Existing keys must all be exactly 32 bytes before enabling Ethereum key validation.');
+            }
+        }
     }
 
     setValueMode(mode) {
