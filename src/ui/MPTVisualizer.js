@@ -18,6 +18,7 @@ export class MPTVisualizer {
         this.root = null;            // backend-derived MPT view
         this.computedRoot = '';
         this.entries = {};           // hex_key -> value (custom mode only)
+        this.valueMode = 'utf8';   // 'utf8' or 'hex' raw bytes
         this._rebuildPending = false;
         this._onChange = null;
         this.render();
@@ -57,12 +58,18 @@ export class MPTVisualizer {
         if (this._onChange) this._onChange();
     }
 
+    setValueMode(mode) {
+        if (mode !== 'utf8' && mode !== 'hex') throw new Error('Invalid Value mode');
+        this.valueMode = mode;
+        return this._rebuild();
+    }
+
     async _rebuild() {
         if (this._rebuildPending) return; // coalesce — last call wins
         this._rebuildPending = true;
         try {
             const snapshot = { ...this.entries };
-            const { root, computedRoot } = await this.service.buildTrie(snapshot);
+            const { root, computedRoot } = await this.service.buildTrie(snapshot, this.valueMode);
             this.root = root;
             this.computedRoot = computedRoot;
             // The backend left-pads odd-length hex keys with a leading zero
