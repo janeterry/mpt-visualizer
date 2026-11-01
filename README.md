@@ -19,7 +19,7 @@ The Merkle Patricia Trie is one of the harder Ethereum internals to picture: its
 
 This project makes it tangible, with two modes (both backed by canonical RLP encoding and keccak hashing):
 
-- **Custom mode :** build a trie from your own hex keys and values and watch branches, extensions, and leaves appear and split as the keys' prefixes overlap. Runs entirely in your browser. Click a node to see its keccak hash and how parents reference children, and click a leaf to trace its path back to the root.
+- **Custom mode :** build a trie from your own hex keys and values and watch branches, extensions, and leaves appear and split as the keys' prefixes overlap. Runs entirely in your browser. Click a node to see its keccak hash and how parents reference children, and click a leaf to trace its path back to the root. Values can be entered as UTF-8 text (legacy behavior) or as raw Hex Bytes. In Hex Bytes mode, `0xf844...` is decoded into bytes before being used as the leaf value; it is not treated as the UTF-8 characters `0xf844...`. An optional validation switch enforces 32-byte (64-hex-character) keys.
 
   <div align="center">
     <img src="assets/custom-mode.png" alt="Custom mode" width="700"><br/>
@@ -96,6 +96,10 @@ src/
 tests/                    Frontend tests (node --test)
 index.html                Page shell
 ```
+
+## Ethereum account-trie input
+
+For an Ethereum account StateTrie, provide each key as the 32-byte `keccak256(address)` hash and each value as the account's RLP-encoded bytes (select **Hex Bytes** mode). Enable the 32-byte key validation option to catch short or malformed keys. The computed root is a true `stateRoot` only when the complete account set for that state is supplied; an arbitrary subset produces the MPT root of that subset only.
 
 ## Limitations
 
