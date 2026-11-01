@@ -55,6 +55,25 @@ export function boot() {
         clearStatus();
     }));
 
+    // --- Custom-mode Ethereum byte input ---------------------------------
+    const valueModeEl = document.getElementById('valueMode');
+    valueModeEl.addEventListener('change', () => {
+        trapError(viz.setValueMode(valueModeEl.value));
+        document.getElementById('valueInput').placeholder = valueModeEl.value === 'hex'
+            ? 'RLP-encoded value as hex bytes, e.g. 0xf844...'
+            : 'UTF-8 text value';
+    });
+    document.getElementById('require32ByteKeys').addEventListener('change', e => {
+        try {
+            viz.setRequire32ByteKeys(e.target.checked);
+            showStatus(e.target.checked ? '32-byte key validation enabled' : '32-byte key validation disabled', 'ok');
+        } catch (err) {
+            e.target.checked = false;
+            viz.setRequire32ByteKeys(false);
+            showStatus(err.message, 'error');
+        }
+    });
+
     // --- Custom mode -----------------------------------------------------
     document.getElementById('addButton').addEventListener('click', () => {
         const key = document.getElementById('keyInput').value.trim();
