@@ -20,16 +20,22 @@
             </div>
 
             <div class="panel-body" id="panel-custom">
+                <label>Value input format</label>
+                <select id="valueMode" class="mode-select">
+                    <option value="utf8">UTF-8 text (original)</option>
+                    <option value="hex">Hex Bytes (raw bytes)</option>
+                </select>
+                <label class="inline-check"><input type="checkbox" id="require32ByteKeys" /> Require 32-byte keys (64 hex characters)</label>
                 <label>Single insert</label>
-                <input type="text" id="keyInput" placeholder="key (hex, e.g. 1a2b)" />
+                <input type="text" id="keyInput" placeholder="key (hex, e.g. 1a2b; Ethereum: 64 hex chars)" />
                 <div style="height:8px"></div>
-                <input type="text" id="valueInput" placeholder="value" />
+                <input type="text" id="valueInput" placeholder="value (Hex Bytes: e.g. 0xf844...)" />
                 <div class="btn-row">
                     <button class="primary" id="addButton">Insert</button>
                     <button class="ghost" id="clearButton">Clear trie</button>
                 </div>
 
-                <label>Bulk insert (key=value per line, or JSON)</label>
+                <label>Bulk insert (key=value per line, or JSON; current Value format applies)</label>
                 <textarea id="bulkInput" placeholder='1234=alice&#10;1235=bob&#10;abcd=carol'></textarea>
                 <div class="btn-row">
                     <button class="secondary" id="bulkButton">Insert bulk</button>
@@ -38,7 +44,7 @@
                 <label>Examples</label>
                 <div class="examples" id="examples"></div>
 
-                <p class="help">Keys are hex (0-9, a-f). The trie and its keccak root are computed in your browser.</p>
+                <p class="help">Keys are hex bytes. In Hex Bytes mode, values are decoded into raw bytes before trie encoding and hashing. Ethereum account StateTrie uses keccak256(address) as its 32-byte key and the RLP-encoded account as its value. This tool computes an arbitrary MPT root; it is a StateRoot only when the complete account set is supplied.</p>
 
                 <div class="stats">
                     <div class="stat"><div class="stat-value" id="statLeaves">0</div><div class="stat-label">Leaf</div></div>
