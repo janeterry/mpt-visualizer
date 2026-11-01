@@ -448,3 +448,27 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     margin-top: 6px;
     line-height: 1.5;
 }
+
+
+/* --- Ethereum byte-input controls -------------------------------------- */
+.mode-select {
+    width: 100%;
+    padding: 9px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 13px;
+}
+.mode-select:focus { outline: none; border-color: var(--accent); }
+.inline-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 4px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 12px;
+    font-weight: 500;
+}
+.inline-check input { accent-color: var(--accent); }
