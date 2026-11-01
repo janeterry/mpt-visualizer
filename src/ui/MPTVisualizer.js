@@ -38,6 +38,7 @@ export class MPTVisualizer {
             throw new Error(`Invalid hex key: ${key}`);
         }
         const normalizedKey = key.replace(/^0x/i, '').toLowerCase();
+        if (this.valueMode === 'hex' && String(value).replace(/^0x/i, '') !== '' && !/^(?:[0-9a-fA-F]{2})+$/.test(String(value).replace(/^0x/i, ''))) throw new Error('Hex Bytes Value must contain complete bytes (even number of hex characters).');
         if (this.require32ByteKeys && normalizedKey.length !== 64) throw new Error('Ethereum account-trie keys must be exactly 32 bytes (64 hex characters).');
         this.entries[normalizedKey] = value;
         await this._rebuild();
@@ -45,6 +46,8 @@ export class MPTVisualizer {
 
     async insertBulk(dict) {
         for (const [k, v] of Object.entries(dict)) {
+            const hexValue = String(v).replace(/^0x/i, '');
+            if (this.valueMode === 'hex' && hexValue !== '' && !/^(?:[0-9a-fA-F]{2})+$/.test(hexValue)) throw new Error(`Value for key ${k} is not valid Hex Bytes.`);
             if (!/^[0-9a-fA-F]+$/.test(k.replace(/^0x/i, ''))) {
                 throw new Error(`Invalid hex key: ${k}`);
             }
