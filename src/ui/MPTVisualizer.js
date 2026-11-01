@@ -74,6 +74,14 @@ export class MPTVisualizer {
 
     setValueMode(mode) {
         if (mode !== 'utf8' && mode !== 'hex') throw new Error('Invalid Value mode');
+        if (mode === 'hex') {
+            for (const [key, value] of Object.entries(this.entries)) {
+                const hex = String(value).replace(/^0x/i, '');
+                if (hex !== '' && !/^(?:[0-9a-fA-F]{2})+$/.test(hex)) {
+                    throw new Error('Current values are not all valid Hex Bytes. Clear the existing UTF-8 example/data first, then switch to Hex Bytes.');
+                }
+            }
+        }
         this.valueMode = mode;
         return this._rebuild();
     }
