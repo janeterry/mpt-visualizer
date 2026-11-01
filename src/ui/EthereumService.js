@@ -144,8 +144,8 @@ export class EthereumService {
      * @param {Object<string,string>} entries
      * @returns {Promise<{ root: object|null, computedRoot: string, nodeCount: number }>}
      */
-    async buildTrie(entries) {
-        const body = buildTrieResponse(entries);
+    async buildTrie(entries, valueMode = 'utf8') {
+        const body = buildTrieResponse(entries, valueMode);
         return {
             root: viewToMpt(body.root),
             computedRoot: body.computed_root,
