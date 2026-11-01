@@ -58,10 +58,16 @@ export function boot() {
     // --- Custom-mode Ethereum byte input ---------------------------------
     const valueModeEl = document.getElementById('valueMode');
     valueModeEl.addEventListener('change', () => {
-        trapError(viz.setValueMode(valueModeEl.value));
-        document.getElementById('valueInput').placeholder = valueModeEl.value === 'hex'
-            ? 'RLP-encoded value as hex bytes, e.g. 0xf844...'
-            : 'UTF-8 text value';
+        try {
+            const nextMode = valueModeEl.value;
+            trapError(viz.setValueMode(nextMode));
+            document.getElementById('valueInput').placeholder = nextMode === 'hex'
+                ? 'RLP-encoded value as hex bytes, e.g. 0xf844...'
+                : 'UTF-8 text value';
+        } catch (err) {
+            valueModeEl.value = viz.valueMode;
+            showStatus(err.message, 'error');
+        }
     });
     document.getElementById('require32ByteKeys').addEventListener('change', e => {
         try {
